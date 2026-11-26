@@ -1,0 +1,18 @@
+*.class
+target/
+.env
+temp/
+.DS_Store
+*.iml
+.idea/
+.vscode/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Python cache (tools/)
+__pycache__/
+
+# Office lock files
+~$*.docx
+~$*.xlsx

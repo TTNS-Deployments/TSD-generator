@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TSD Generator — TTNS AVD</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #161921;
+      --surface2: #1e2230;
+      --border: #2a2f3d;
+      --accent: #4f7cff;
+      --accent2: #7c5fff;
+      --text: #e8eaf0;
+      --text-muted: #7a8099;
+      --success: #3ecf8e;
+      --error: #ff5a5a;
+      --warn: #ffb347;
+      --radius: 10px;
+      --radius-lg: 16px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header .logo-line {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 36px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, #a0aec0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      margin-top: 10px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .progress-bar-wrap {
+      max-width: 780px;
+      margin: 0 auto 36px;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .progress-track {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .form-wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 18px 24px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-num {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .section-status {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .section-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .subsection-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: -8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .row.single { grid-template-columns: 1fr; }
+    .row.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    label .req {
+      color: var(--accent);
+      font-size: 11px;
+    }
+
+    label .opt {
+      color: var(--text-muted);
+      font-size: 11px;
+      opacity: 0.7;
+      font-style: italic;
+    }
+
+    input, select, textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 10px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,124,255,0.15);
+    }
+
+    input.invalid, select.invalid, textarea.invalid {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(255,90,90,0.15);
+    }
+
+    select option { background: var(--surface2); }
+
+    textarea { resize: vertical; min-height: 90px; }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.5);
+      cursor: pointer;
+    }
+
+    .submit-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 0 16px;
+    }
+
+    .btn-generate {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 14px 48px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      min-width: 240px;
+    }
+
+    .btn-generate:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-generate:active { transform: translateY(0); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-msg {
+      font-size: 14px;
+      text-align: center;
+      display: none;
+    }
+
+    .status-msg.success { color: var(--success); display: block; }
+    .status-msg.error   { color: var(--error);   display: block; }
+
+    [hidden] { display: none !important; }
+
+    .mode-block { display: flex; flex-direction: column; gap: 28px; }
+
+    .type-card .section-num { background: linear-gradient(135deg, var(--accent2), var(--accent)); }
+
+    .hint { font-size: 12px; color: var(--text-muted); }
+
+    .calc-preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .calc-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+    }
+    .calc-item .k { font-size: 12px; color: var(--text-muted); }
+    .calc-item .v { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-top: 2px; }
+
+    .calc-preview.four { grid-template-columns: repeat(4, 1fr); }
+
+    .usage-grid {
+      display: grid;
+      grid-template-columns: 70px repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      align-items: center;
+    }
+    .usage-grid .grid-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+    .month-pick { display: flex; gap: 6px; }
+    .month-pick select { padding: 8px 8px; font-size: 13px; }
+    input:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    input[type="file"] { padding: 9px 12px; cursor: pointer; }
+    input[type="file"]::file-selector-button {
+      background: var(--border);
+      color: var(--text);
+      border: 0;
+      border-radius: 6px;
+      padding: 6px 12px;
+      margin-right: 12px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .calc-preview, .calc-preview.four { grid-template-columns: 1fr; }
+      .usage-grid { grid-template-columns: 50px repeat(3, minmax(0, 1fr)); gap: 6px; }
+      .month-pick { flex-direction: column; }
+      .row { grid-template-columns: 1fr; }
+      .row.triple { grid-template-columns: 1fr; }
+      header h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-line">Tata Tele NXTGEN Solutions Limited</div>
+  <h1>TSD Generator</h1>
+  <p id="subtitle">Azure Virtual Desktop — Technical Solution Document</p>
+</header>
+
+<div class="progress-bar-wrap">
+  <div class="progress-info">
+    <span id="progressLabel">0 sections completed</span>
+    <span id="progressPct">0%</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+</div>
+
+<div class="form-wrapper">
+
+  <!-- DOCUMENT TYPE -->
+  <div class="section-card type-card">
+    <div class="section-header">
+      <div class="section-num">✦</div>
+      <div class="section-title">Document Type</div>
+    </div>
+    <div class="section-body">
+      <div class="row">
+        <div class="field">
+          <label for="tsdKind">TSD Type <span class="req">*</span></label>
+          <select id="tsdKind">
+            <option value="d1">D1 — Solutioning &amp; deployment by TTNS (AI-assisted)</option>
+            <option value="d2">D2 — Deployment by partner / customer</option>
+          </select>
+        </div>
+        <div class="field" id="d2TypeField" hidden>
+          <label for="d2Type">D2 Document <span class="req">*</span></label>
+          <select id="d2Type">
+            <option value="azure-subscription">Azure Subscription</option>
+            <option value="self-deployment-ri">Self-Deployment RI</option>
+            <option value="csp-to-csp">CSP to CSP</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== D1: AVD (AI-assisted) ===================== -->
+  <div class="mode-block" id="mode-d1">
+
+  <!-- SECTION 1 -->
+  <div class="section-card" data-section="1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">Proposal Details</div>
+      <div class="section-status" id="status1">0/3</div>
+    </div>
+    <div class="section-body">
+      <div class="row">
+        <div class="field">
+          <label for="customerName">Customer Name <span class="req">*</span></label>
+          <input type="text" id="customerName" placeholder="e.g. Acme Corp" required />
+        </div>
+        <div class="field">
+          <label for="date">Date <span class="req">*</span></label>
+          <input type="date" id="date" required />
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="quoteId">Quote ID <span class="req">*</span></label>
+          <input type="text" id="quoteId" placeholder="e.g. QT-2026-001" required />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section-card" data-section="2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title">TTNS Contact Details</div>
+      <div class="section-status" id="status2">0/4</div>
+    </div>
+    <div class="section-body">
+      <div class="subsection-label">Account Manager</div>
+      <div class="row">
+        <div class="field">
+          <label for="amName">AM Name <span class="req">*</span></label>
+          <input type="text" id="amName" placeholder="Full name" required />
+        </div>
+        <div class="field">
+          <label for="amEmail">AM Email <span class="req">*</span></label>
+          <input type="email" id="amEmail" placeholder="am@ttns.com" required />
+        </div>
+      </div>
+      <div class="subsection-label">TSS / PSS <span style="font-style:italic;opacity:0.6;font-weight:400;letter-spacing:0">(Optional)</span></div>
+      <div class="row">
+        <div class="field">
+          <label for="pssName">PSS Name <span class="opt">Optional</span></label>
+          <input type="text" id="pssName" placeholder="Full name" />
+        </div>
+        <div class="field">
+          <label for="pssEmail">PSS Email <span class="opt">Optional</span></label>
+          <input type="email" id="pssEmail" placeholder="pss@ttns.com" />
+        </div>
+      </div>
+      <div class="subsection-label">Solution Architect</div>
+      <div class="row">
+        <div class="field">
+          <label for="saName">SA Name <span class="req">*</span></label>
+          <input type="text" id="saName" placeholder="Full name" required />
+        </div>
+        <div class="field">
+          <label for="saEmail">SA Email <span class="req">*</span></label>
+          <input type="email" id="saEmail" placeholder="sa@ttns.com" required />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section-card" data-section="3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title">Customer Contact Details</div>
+      <div class="section-status" id="status3">0/3</div>
+    </div>
+    <div class="section-body">
+      <div class="row">
+        <div class="field">
+          <label for="spocName">SPOC Name <span class="req">*</span></label>
+          <input type="text" id="spocName" placeholder="Full name" required />
+        </div>
+        <div class="field">
+          <label for="spocRole">SPOC Role <span class="req">*</span></label>
+          <input type="text" id="spocRole" placeholder="e.g. IT Manager" required />
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="spocEmail">SPOC Email <span class="req">*</span></label>
+          <input type="email" id="spocEmail" placeholder="spoc@customer.com" required />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section-card" data-section="4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div class="section-title">Mandatory Account Details</div>
+      <div class="section-status" id="status4">0/1</div>
+    </div>
+    <div class="section-body">
+      <div class="row triple">
+        <div class="field">
+          <label for="region">Region <span class="req">*</span></label>
+          <select id="region" required>
+            <option value="">Select region</option>
+            <option value="North">North</option>
+            <option value="South">South</option>
+            <option value="West">West</option>
+            <option value="Mumbai">Mumbai</option>
+            <option value="DGIS">DGIS</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="tenantId">Tenant ID <span class="opt">Optional</span></label>
+          <input type="text" id="tenantId" placeholder="Azure Tenant ID" />
+        </div>
+        <div class="field">
+          <label for="domainName">Domain Name <span class="opt">Optional</span></label>
+          <input type="text" id="domainName" placeholder="e.g. corp.local" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section-card" data-section="5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div class="section-title">AVD Requirements</div>
+      <div class="section-status" id="status5">0/2</div>
+    </div>
+    <div class="section-body">
+      <div class="subsection-label">Required</div>
+      <div class="row">
+        <div class="field">
+          <label for="numUsers">Number of Users <span class="req">*</span></label>
+          <input type="number" id="numUsers" placeholder="e.g. 100" min="1" required />
+        </div>
+        <div class="field">
+          <label for="fslogixSize">FsLogix Storage Size (GB) <span class="req">*</span></label>
+          <input type="number" id="fslogixSize" placeholder="e.g. 30" min="1" required />
+        </div>
+      </div>
+      <div class="subsection-label">LLM Context <span style="font-style:italic;opacity:0.6;font-weight:400;letter-spacing:0">(Optional — improves AI output)</span></div>
+      <div class="row">
+        <div class="field">
+          <label for="workloadType">Workload Type <span class="opt">Optional</span></label>
+          <select id="workloadType">
+            <option value="">Select workload</option>
+            <option value="Heavy">Heavy</option>
+            <option value="Standard">Standard</option>
+            <option value="Light">Light</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="adSetupType">AD Setup Type <span class="opt">Optional</span></label>
+          <select id="adSetupType">
+            <option value="">Select AD type</option>
+            <option value="Entra ID Only">Entra ID Only</option>
+            <option value="On-premises AD">On-premises AD</option>
+            <option value="Hybrid AD">Hybrid AD</option>
+          </select>
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="applications">Key Applications <span class="opt">Optional</span></label>
+          <input type="text" id="applications" placeholder="e.g. SAP, AutoCAD, MS Office" />
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="painPoint">Pain Point / Business Challenge <span class="opt">Optional</span></label>
+          <textarea id="painPoint" placeholder="Describe the customer's current challenges or pain points..."></textarea>
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="complianceReq">Compliance Requirements <span class="opt">Optional</span></label>
+          <textarea id="complianceReq" placeholder="e.g. ISO 27001, GDPR, PCI-DSS..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+  <!-- ===================== /D1 ===================== -->
+
+  <!-- ===================== D2 (no AI) — one form for all D2 documents =====================
+       Elements with data-d2-types="a b" only show (and only count as required) for those D2 types. -->
+  <div class="mode-block" id="mode-d2" hidden>
+
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">Proposal Details</div>
+      <div class="section-status"></div>
+    </div>
+    <div class="section-body">
+      <div class="row">
+        <div class="field">
+          <label for="az_customer_name">Customer / Partner Name <span class="req">*</span></label>
+          <input type="text" id="az_customer_name" data-key="customer_name" placeholder="e.g. ABC Technologies Limited" required />
+        </div>
+        <div class="field">
+          <label for="az_end_customer">End Customer <span class="req">*</span></label>
+          <input type="text" id="az_end_customer" data-key="end_customer" placeholder="e.g. XYZ Pvt. Ltd." required />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="az_date">Date <span class="req">*</span></label>
+          <input type="date" id="az_date" data-key="date" required />
+        </div>
+        <div class="field">
+          <label for="az_quote_id">DBCH Quote ID <span class="req">*</span></label>
+          <input type="text" id="az_quote_id" data-key="quote_id" placeholder="e.g. QT57862" required />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title">Tata Tele Contact Details</div>
+      <div class="section-status"></div>
+    </div>
+    <div class="section-body">
+      <div class="subsection-label">Account Manager</div>
+      <div class="row">
+        <div class="field">
+          <label for="az_am_name">AM Name <span class="req">*</span></label>
+          <input type="text" id="az_am_name" data-key="am_name" placeholder="Full name" required />
+        </div>
+        <div class="field">
+          <label for="az_am_email">AM Email <span class="req">*</span></label>
+          <input type="email" id="az_am_email" data-key="am_email" placeholder="am@ttns.in" required />
+        </div>
+      </div>
+      <div class="subsection-label">Solution Architect</div>
+      <div class="row">
+        <div class="field">
+          <label for="az_sa_name">SA Name <span class="req">*</span></label>
+          <input type="text" id="az_sa_name" data-key="sa_name" placeholder="Full name" required />
+        </div>
+        <div class="field">
+          <label for="az_sa_email">SA Email <span class="req">*</span></label>
+          <input type="email" id="az_sa_email" data-key="sa_email" placeholder="sa@ttns.in" required />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title">Customer Contact Details</div>
+      <div class="section-status"></div>
+    </div>
+    <div class="section-body">
+      <div class="row">
+        <div class="field">
+          <label for="az_spoc_name">SPOC Name <span class="req">*</span></label>
+          <input type="text" id="az_spoc_name" data-key="spoc_name" placeholder="Full name" required />
+        </div>
+        <div class="field">
+          <label for="az_spoc_role">SPOC Role <span class="req">*</span></label>
+          <input type="text" id="az_spoc_role" data-key="spoc_role" value="Cloud Delivery &amp; Support" required />
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="az_spoc_email">SPOC Email <span class="req">*</span></label>
+          <input type="email" id="az_spoc_email" data-key="spoc_email" placeholder="spoc@customer.com" required />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div class="section-title">Mandatory Account Details</div>
+      <div class="section-status"></div>
+    </div>
+    <div class="section-body">
+      <div class="row">
+        <div class="field">
+          <label for="az_region">Region <span class="req">*</span></label>
+          <select id="az_region" data-key="region" required>
+            <option value="">Select region</option>
+            <option value="NORTH">North</option>
+            <option value="SOUTH">South</option>
+            <option value="WEST">West</option>
+            <option value="MUMBAI">Mumbai</option>
+            <option value="DGIS">DGIS</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card" data-d2-types="azure-subscription self-deployment-ri">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div class="section-title">Commercials &amp; BOQ</div>
+      <div class="section-status"></div>
+    </div>
+    <div class="section-body">
+      <div class="row">
+        <div class="field">
+          <label for="az_monthly_usage">Expected Monthly Usage (₹) <span class="req">*</span></label>
+          <input type="number" id="az_monthly_usage" data-key="monthly_usage" placeholder="e.g. 12000" min="0" step="any" required />
+        </div>
+        <div class="field" data-d2-types="azure-subscription">
+          <label for="az_discount_pct">Discount % <span class="req">*</span></label>
+          <input type="number" id="az_discount_pct" data-key="discount_pct" placeholder="e.g. 16" min="0" max="100" step="any" required />
+        </div>
+      </div>
+      <div class="calc-preview" aria-live="polite">
+        <div class="calc-item" data-d2-types="azure-subscription"><div class="k">Discount</div><div class="v" id="az_calc_discount">—</div></div>
+        <div class="calc-item" data-d2-types="azure-subscription"><div class="k">Usage post discount</div><div class="v" id="az_calc_post">—</div></div>
+        <div class="calc-item"><div class="k">Total monthly billing</div><div class="v" id="az_calc_total">—</div></div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="az_boq">BOQ — Azure Pricing Calculator export (.xlsx) <span class="req">*</span></label>
+          <input type="file" id="az_boq" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required />
+          <span class="hint">Pasted as is under “Azure Monthly Consumption Estimates”. Set the calculator currency to INR before exporting.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSP to CSP: prerequisites (all optional) -->
+  <div class="section-card" data-d2-types="csp-to-csp">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div class="section-title">Prerequisites</div>
+      <div class="section-status"></div>
+    </div>
+    <div class="section-body">
+      <span class="hint">All optional: leave blank anything that doesn't apply yet. Answers go into the Prerequisites table.</span>
+      <div class="row">
+        <div class="field">
+          <label for="pre_1">1. Current Azure account type <span class="opt">Optional</span></label>
+          <select id="pre_1" data-key="pre_1">
+            <option value="">—</option>
+            <option value="PayG">PayG</option>
+            <option value="CSP" selected>CSP</option>
+            <option value="EA">EA</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pre_2">2. Current CSP name <span class="opt">Optional</span></label>
+          <input type="text" id="pre_2" data-key="pre_2" placeholder="e.g. Contoso Cloud" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="pre_3">3. Current CSP Microsoft ID <span class="opt">Optional</span></label>
+          <input type="text" id="pre_3" data-key="pre_3" placeholder="Partner / MPN ID" />
+        </div>
+        <div class="field">
+          <label for="pre_4">4. Source tenant &amp; domain name <span class="opt">Optional</span></label>
+          <input type="text" id="pre_4" data-key="pre_4" placeholder="e.g. abc.onmicrosoft.com" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="pre_5">5. Source tenant location / region <span class="opt">Optional</span></label>
+          <input type="text" id="pre_5" data-key="pre_5" placeholder="e.g. India" />
+        </div>
+        <div class="field">
+          <label for="pre_6">6. Source subscription ID(s) <span class="opt">Optional</span></label>
+          <input type="text" id="pre_6" data-key="pre_6" placeholder="Separate several IDs with commas" />
+        </div>
+      </div>
+      <div class="row single">
+        <div class="field">
+          <label for="pre_7">7. Customer SPOC / admin name and email in Azure portal <span class="opt">Optional</span></label>
+          <input type="text" id="pre_7" data-key="pre_7" placeholder="e.g. Amit Shah, amit@abc.com" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="pre_8">8. Owner / Contributor access on source subscriptions? <span class="opt">Optional</span></label>
+          <select id="pre_8" data-key="pre_8">
+            <option value="">—</option><option value="Yes">Yes</option><option value="No">No</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pre_11">11. Any RI / reservations and marketplace products? <span class="opt">Optional</span></label>
+          <select id="pre_11" data-key="pre_11">
+            <option value="">—</option><option value="Yes">Yes</option><option value="No">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="pre_9">9. Last 3 months invoices <span class="opt">Optional</span></label>
+          <select id="pre_9" data-key="pre_9">
+            <option value="">—</option><option value="Shared">Shared</option><option value="Not shared">Not shared</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pre_10">10. Last 3 months resource report <span class="opt">Optional</span></label>
+          <select id="pre_10" data-key="pre_10">
+            <option value="">—</option><option value="Shared">Shared</option><option value="Not shared">Not shared</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSP to CSP: last 3 months usage -> calculations -> commercials -->
+  <div class="section-card" data-d2-types="csp-to-csp">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <div class="section-title">Last 3 Months Usage &amp; Commercials</div>
+      <div class="section-status"></div>
+    </div>
+    <div class="section-body">
+      <span class="hint">From the last 3 invoices. <b>RI</b> = reserved instances (never discounted). <b>Azure</b> = non-reserved resources (PayG); the discount applies only to these.</span>
+      <div class="row">
+        <div class="field">
+          <label for="csp_currency">Invoice currency <span class="req">*</span></label>
+          <select id="csp_currency" data-key="currency" required>
+            <option value="USD">USD ($)</option>
+            <option value="INR">INR (₹)</option>
+          </select>
+        </div>
+        <div class="field" id="csp_fx_field">
+          <label for="csp_fx">USD → INR exchange rate <span class="req">*</span></label>
+          <input type="number" id="csp_fx" data-key="fx_rate" placeholder="e.g. 95.06" min="0" step="any" required />
+        </div>
+      </div>
+
+      <div class="subsection-label">Monthly usage (<span class="cur-sym">$</span>)</div>
+      <div class="usage-grid">
+        <div></div>
+        <div class="month-pick" data-month="1"></div>
+        <div class="month-pick" data-month="2"></div>
+        <div class="month-pick" data-month="3"></div>
+
+        <div class="grid-label">RI</div>
+        <input type="number" data-key="ri_m1" min="0" step="any" placeholder="0" aria-label="RI month 1" />
+        <input type="number" data-key="ri_m2" min="0" step="any" placeholder="0" aria-label="RI month 2" />
+        <input type="number" data-key="ri_m3" min="0" step="any" placeholder="0" aria-label="RI month 3" />
+
+        <div class="grid-label">Azure</div>
+        <input type="number" data-key="az_m1" min="0" step="any" placeholder="0" aria-label="Azure month 1" />
+        <input type="number" data-key="az_m2" min="0" step="any" placeholder="0" aria-label="Azure month 2" />
+        <input type="number" data-key="az_m3" min="0" step="any" placeholder="0" aria-label="Azure month 3" />
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="csp_discount">Discount % on Azure (PayG) <span class="opt">Optional</span></label>
+          <input type="number" id="csp_discount" data-key="discount_pct" min="0" max="100" step="any" placeholder="e.g. 16" disabled />
+          <span class="hint" id="csp_discount_hint">Enter Azure (non-reserved) usage to enable the discount.</span>
+        </div>
+      </div>
+
+      <div class="calc-preview four" aria-live="polite">
+        <div class="calc-item"><div class="k">A — PayG (Azure)</div><div class="v" id="csp_a">—</div></div>
+        <div class="calc-item"><div class="k">B — Discount</div><div class="v" id="csp_b">—</div></div>
+        <div class="calc-item"><div class="k">C — RI</div><div class="v" id="csp_c">—</div></div>
+        <div class="calc-item"><div class="k" id="csp_total_label">Total = A − B + C</div><div class="v" id="csp_total">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+  <!-- ===================== /D2 ===================== -->
+
+  <!-- SUBMIT -->
+  <div class="submit-area">
+    <button class="btn-generate" id="generateBtn" onclick="handleSubmit()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnText">Generate TSD</span>
+    </button>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+</div>
+
+<script>
+  // Set today's date as default
+  document.getElementById('date').valueAsDate = new Date();
+  document.getElementById('az_date').valueAsDate = new Date();
+
+  // ---------- Mode: D1, or D2 + D2 document type ----------
+  const SUBTITLES = {
+    'd1': 'Azure Virtual Desktop — Technical Solution Document (D1)',
+    'azure-subscription': 'Azure Subscription — Disti2 Technical Solution Document (D2)',
+    'self-deployment-ri': 'Self Deployment RI — Disti2 Technical Solution Document (D2)',
+    'csp-to-csp': 'CSP-CSP Billing Migration — Disti2 Technical Solution Document (D2)'
+  };
+
+  function currentMode() {
+    return document.getElementById('tsdKind').value;   // 'd1' or 'd2'
+  }
+
+  function currentD2Type() {
+    return document.getElementById('d2Type').value;
+  }
+
+  function activeBlock() {
+    return document.getElementById('mode-' + currentMode());
+  }
+
+  // Required fields that are actually on screen (fields of other D2 types are hidden and ignored)
+  function visibleRequired(root) {
+    return Array.from(root.querySelectorAll('[required]')).filter(el => !el.closest('[hidden]'));
+  }
+
+  function applyMode() {
+    const mode = currentMode();
+    document.getElementById('d2TypeField').hidden = mode !== 'd2';
+    document.querySelectorAll('.mode-block').forEach(b => { b.hidden = b !== activeBlock(); });
+    const d2Type = currentD2Type();
+    document.querySelectorAll('[data-d2-types]').forEach(el => {
+      el.hidden = !el.dataset.d2Types.split(' ').includes(d2Type);
+    });
+    document.getElementById('subtitle').textContent = SUBTITLES[mode === 'd1' ? 'd1' : d2Type] || '';
+    clearStatus();
+    updateAzCalc();
+    updateCspCalc();
+    updateProgress();
+  }
+
+  document.getElementById('tsdKind').addEventListener('change', applyMode);
+  document.getElementById('d2Type').addEventListener('change', applyMode);
+
+  // ---------- Progress (required fields of the visible form) ----------
+  function updateProgress() {
+    const cards = activeBlock().querySelectorAll('.section-card');
+    let completed = 0;
+    cards.forEach(card => {
+      const req = visibleRequired(card);
+      const filled = req.filter(el => el.value.trim() !== '').length;
+      const status = card.querySelector('.section-status');
+      if (status) status.textContent = req.length ? filled + '/' + req.length : 'Optional';
+      if (filled === req.length) completed++;
+    });
+    const pct = cards.length ? Math.round((completed / cards.length) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = completed + ' of ' + cards.length + ' sections completed';
+    document.getElementById('progressPct').textContent = pct + '%';
+  }
+
+  // Attach change listeners
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('input', updateProgress);
+    el.addEventListener('change', updateProgress);
+  });
+
+  // ---------- D2 Azure Subscription: live commercials preview ----------
+  function indianFormat(n) {
+    return '₹ ' + n.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  function updateAzCalc() {
+    const usage = parseFloat(document.getElementById('az_monthly_usage').value);
+    // Reserved instances have no discount
+    const pct = currentD2Type() === 'azure-subscription'
+      ? parseFloat(document.getElementById('az_discount_pct').value) : 0;
+    const ok = !isNaN(usage) && !isNaN(pct);
+    const discount = ok ? Math.round(usage * pct) / 100 : 0;
+    document.getElementById('az_calc_discount').textContent = ok ? indianFormat(discount) : '—';
+    document.getElementById('az_calc_post').textContent = ok ? indianFormat(usage - discount) : '—';
+    document.getElementById('az_calc_total').textContent = ok ? indianFormat(usage - discount) : '—';
+  }
+  ['az_monthly_usage', 'az_discount_pct'].forEach(id =>
+    document.getElementById(id).addEventListener('input', updateAzCalc));
+
+  // ---------- D2 CSP to CSP: month pickers, currency, discount, live commercials ----------
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function buildMonthPickers() {
+    const now = new Date();
+    document.querySelectorAll('.month-pick').forEach(box => {
+      const n = parseInt(box.dataset.month, 10);
+      // Default: the 3 months before the current month (editable)
+      const d = new Date(now.getFullYear(), now.getMonth() - (4 - n), 1);
+      const month = document.createElement('select');
+      month.setAttribute('aria-label', 'Month ' + n);
+      MONTHS.forEach((m, i) => month.add(new Option(m, String(i + 1).padStart(2, '0'))));
+      month.value = String(d.getMonth() + 1).padStart(2, '0');
+      const year = document.createElement('select');
+      year.setAttribute('aria-label', 'Year ' + n);
+      for (let y = now.getFullYear() - 3; y <= now.getFullYear() + 1; y++) year.add(new Option(y, y));
+      year.value = d.getFullYear();
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.dataset.key = 'm' + n;
+      const sync = () => { hidden.value = year.value + '-' + month.value; };
+      month.addEventListener('change', sync);
+      year.addEventListener('change', sync);
+      sync();
+      box.append(month, year, hidden);
+    });
+  }
+
+  function cspNum(key) {
+    const v = parseFloat(document.querySelector('#mode-d2 [data-key="' + key + '"]:not([type="hidden"])')?.value);
+    return isNaN(v) ? 0 : v;
+  }
+
+  function updateCspCalc() {
+    const usd = document.getElementById('csp_currency').value === 'USD';
+    document.getElementById('csp_fx_field').hidden = !usd;
+    document.querySelectorAll('.cur-sym').forEach(el => { el.textContent = usd ? '$' : '₹'; });
+
+    const azSum = cspNum('az_m1') + cspNum('az_m2') + cspNum('az_m3');
+    const riSum = cspNum('ri_m1') + cspNum('ri_m2') + cspNum('ri_m3');
+    // The discount applies only to non-reserved (Azure) usage
+    const disc = document.getElementById('csp_discount');
+    disc.disabled = azSum <= 0;
+    if (disc.disabled) disc.value = '';
+    document.getElementById('csp_discount_hint').hidden = !disc.disabled;
+
+    const rate = usd ? parseFloat(document.getElementById('csp_fx').value) : 1;
+    const ok = !isNaN(rate) && rate > 0 && (azSum > 0 || riSum > 0);
+    const r2 = x => Math.round(x * 100) / 100;
+    const a = ok ? Math.round(r2(azSum / 3) * rate) : 0;
+    const c = ok ? Math.round(r2(riSum / 3) * rate) : 0;
+    const pct = parseFloat(disc.value) || 0;
+    const b = Math.round(a * pct / 100);
+    const fmt = n => 'INR ' + n.toLocaleString('en-IN');
+    document.getElementById('csp_a').textContent = ok ? fmt(a) : '—';
+    // No discount: row B is left out of the document
+    document.getElementById('csp_b').textContent = ok ? (b > 0 ? fmt(b) : 'Not included') : '—';
+    document.getElementById('csp_c').textContent = ok ? fmt(c) : '—';
+    document.getElementById('csp_total').textContent = ok ? fmt(a - b + c) + '/-' : '—';
+    document.getElementById('csp_total_label').textContent = pct > 0 ? 'Total = A − B + C' : 'Total = A + C';
+    updateProgress();
+  }
+
+  buildMonthPickers();
+  document.querySelectorAll('#mode-d2 .usage-grid input, #csp_currency, #csp_fx, #csp_discount').forEach(el => {
+    el.addEventListener('input', updateCspCalc);
+    el.addEventListener('change', updateCspCalc);
+  });
+
+  applyMode();
+
+  function formatDate(isoDate) {
+    if (!isoDate) return '';
+    const [year, month, day] = isoDate.split('-');
+    const months = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+    return parseInt(day) + ' ' + months[parseInt(month) - 1] + ' ' + year;
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById('generateBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    btn.disabled = loading;
+    spinner.style.display = loading ? 'block' : 'none';
+    btnText.textContent = loading ? 'Generating...' : 'Generate TSD';
+  }
+
+  function showStatus(msg, type) {
+    const el = document.getElementById('statusMsg');
+    el.textContent = msg;
+    el.className = 'status-msg ' + type;
+  }
+
+  function clearStatus() {
+    const el = document.getElementById('statusMsg');
+    el.className = 'status-msg';
+    el.textContent = '';
+  }
+
+  function validateForm() {
+    let valid = true;
+    visibleRequired(activeBlock()).forEach(el => {
+      if (!el.value.trim()) {
+        el.classList.add('invalid');
+        valid = false;
+      } else {
+        el.classList.remove('invalid');
+      }
+    });
+    return valid;
+  }
+
+  // Remove invalid on input
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('input', () => el.classList.remove('invalid'));
+    el.addEventListener('change', () => el.classList.remove('invalid'));
+  });
+
+  // Saves the response as a file, using the server's file name when it sends one
+  async function downloadResponse(response, fallbackName) {
+    const blob = await response.blob();
+    const cd = response.headers.get('Content-Disposition') || '';
+    const m = cd.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+    const name = m ? decodeURIComponent(m[1]) : fallbackName;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function submitD2() {
+    const block = activeBlock();
+    const fields = {};
+    block.querySelectorAll('[data-key]').forEach(el => {
+      if (!el.closest('[hidden]')) fields[el.dataset.key] = el.value.trim();
+    });
+    const form = new FormData();
+    form.append('data', new Blob([JSON.stringify({ d2_type: currentD2Type(), fields })],
+                                 { type: 'application/json' }));
+    const file = block.querySelector('input[type="file"]');
+    if (file && file.files[0]) form.append('boq', file.files[0]);
+
+    const response = await fetch('api/generate-d2', { method: 'POST', body: form });
+    if (response.ok) {
+      await downloadResponse(response, 'TTNS_D2_TSD.docx');
+      showStatus('TSD generated and downloaded successfully!', 'success');
+    } else {
+      showStatus('Error: ' + await response.text(), 'error');
+    }
+  }
+
+  async function handleSubmit() {
+    clearStatus();
+    if (!validateForm()) {
+      showStatus('Please fill in all required fields highlighted in red.', 'error');
+      return;
+    }
+
+    setLoading(true);
+
+    if (currentMode() === 'd2') {
+      try {
+        await submitD2();
+      } catch (err) {
+        showStatus('Connection error: ' + err.message, 'error');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    const payload = {
+      customer_name: document.getElementById('customerName').value.trim(),
+      date: formatDate(document.getElementById('date').value),
+      quote_id: document.getElementById('quoteId').value.trim(),
+      am_name: document.getElementById('amName').value.trim(),
+      am_email: document.getElementById('amEmail').value.trim(),
+      pss_name: document.getElementById('pssName').value.trim(),
+      pss_email: document.getElementById('pssEmail').value.trim(),
+      sa_name: document.getElementById('saName').value.trim(),
+      sa_email: document.getElementById('saEmail').value.trim(),
+      spoc_name: document.getElementById('spocName').value.trim(),
+      spoc_role: document.getElementById('spocRole').value.trim(),
+      spoc_email: document.getElementById('spocEmail').value.trim(),
+      region: document.getElementById('region').value,
+      tenant_id: document.getElementById('tenantId').value.trim(),
+      domain_name: document.getElementById('domainName').value.trim(),
+      num_users: parseInt(document.getElementById('numUsers').value),
+      fslogix_size: parseInt(document.getElementById('fslogixSize').value),
+      pain_point: document.getElementById('painPoint').value.trim(),
+      workload_type: document.getElementById('workloadType').value,
+      applications: document.getElementById('applications').value.trim(),
+      ad_setup_type: document.getElementById('adSetupType').value,
+      compliance_req: document.getElementById('complianceReq').value.trim()
+    };
+
+    try {
+      const response = await fetch('api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'AVD_TSD_' + payload.customer_name.replace(/\s+/g, '_') + '.docx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showStatus('TSD generated and downloaded successfully!', 'success');
+      } else {
+        const errText = await response.text();
+        showStatus('Error: ' + errText, 'error');
+      }
+    } catch (err) {
+      showStatus('Connection error: ' + err.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+</script>
+
+</body>
+</html>
