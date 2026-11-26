@@ -1,7 +1,8 @@
 name: Build deployment package
 
 # Every push to main builds the app and publishes a GitHub Release with the deployment package:
-#   tsd-generator.tar.gz = app.jar + templates/ + prompts/
+#   tsd-generator.zip = app.jar + templates/ + prompts/
+# (zip, not tar.gz: the App Service Java image has no tar/curl; Deployment/bootstrap/Boot.java unpacks it)
 # The Azure web app downloads that package when it starts (see Deployment/scripts/deploy.sh).
 # Nothing here talks to Azure, so no Azure credentials are needed in GitHub.
 
@@ -36,15 +37,15 @@ jobs:
           cp target/tsd-generator-*.jar bundle/app.jar
           cp -r templates prompts bundle/
           rm -rf "bundle/templates/D2 samples"   # only needed to rebuild templates, not at runtime
-          tar -czf tsd-generator.tar.gz -C bundle .
-          ls -la tsd-generator.tar.gz
+          (cd bundle && zip -q -r ../tsd-generator.zip .)
+          ls -la tsd-generator.zip
 
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="build-${GITHUB_SHA::7}"
-          gh release create "$TAG" tsd-generator.tar.gz \
+          gh release create "$TAG" tsd-generator.zip \
             --title "$TAG" \
             --notes "Automated build of commit ${GITHUB_SHA}." \
             --target "$GITHUB_SHA" \

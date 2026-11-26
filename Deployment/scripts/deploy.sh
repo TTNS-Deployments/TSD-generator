@@ -102,7 +102,7 @@ SHA=$(curl -fsSL "https://api.github.com/repos/$REPO/commits/$BRANCH" \
         | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])' 2>/dev/null || true)
 [ -n "$SHA" ] || fail "Could not find the latest commit of $REPO."
 TAG="build-${SHA:0:7}"
-PACKAGE_URL="https://github.com/$REPO/releases/download/$TAG/tsd-generator.tar.gz"
+PACKAGE_URL="https://github.com/$REPO/releases/download/$TAG/tsd-generator.zip"
 echo "    Commit: $SHA (release $TAG)"
 # GitHub Actions takes a few minutes after a push; wait for it (up to 15 minutes)
 for i in $(seq 1 90); do
@@ -133,15 +133,22 @@ az tag update --resource-id "$WEB_ID" --operation Merge --tags "${TAGS[@]}" -o n
 
 say "Configuring the web app"
 az webapp update -g "$RESOURCE_GROUP" -n "$APP_NAME" --https-only true -o none
-# On start: download the pinned package, unpack it into /home/site/wwwroot/app (keeps the last copy if the
-# download fails), then run the jar on port 8080 with a capped heap.
+# On start: the Java image has no curl/wget/tar, so Java itself downloads and unpacks the pinned package.
+# The downloader's source (Deployment/bootstrap/Boot.java) is in the TSD_BOOTSTRAP app setting; it is written
+# to /tmp and run as a single-file Java program, then the jar is started on port 8080 with a capped heap.
+# Boot.java keeps the last unpacked copy if a download fails.
 az webapp config set -g "$RESOURCE_GROUP" -n "$APP_NAME" -o none \
   --always-on true \
   --ftps-state Disabled \
-  --startup-file 'APP=/home/site/wwwroot/app; curl -fsSL "$TSD_PACKAGE_URL" -o /tmp/tsd.tar.gz && rm -rf $APP && mkdir -p $APP && tar -xzf /tmp/tsd.tar.gz -C $APP || echo "Package download failed, starting the last copy"; cd $APP && exec java -Xmx$JAVA_MAX_HEAP -jar app.jar --server.port=8080'
+  --startup-file 'printf "%s" "$TSD_BOOTSTRAP" > /tmp/Boot.java && java /tmp/Boot.java && cd /home/site/wwwroot/app && exec java -Xmx$JAVA_MAX_HEAP -jar app.jar --server.port=8080'
+
+BOOT_FILE="$SCRIPT_DIR/../bootstrap/Boot.java"
+[ -f "$BOOT_FILE" ] || fail "Missing $BOOT_FILE"
+BOOTSTRAP=$(tr '\r\n' '  ' < "$BOOT_FILE")   # one line; Boot.java uses block comments only
 
 SETTINGS=(
   TSD_PACKAGE_URL="$PACKAGE_URL"
+  TSD_BOOTSTRAP="$BOOTSTRAP"
   TSD_COMMIT="$SHA"
   JAVA_MAX_HEAP="$JAVA_MAX_HEAP"
   WEBSITES_PORT=8080

@@ -39,7 +39,7 @@ Then open **http://localhost:8080**. The form is served by the app (`src/main/re
 
 ## Deploy (Azure Cloud Shell)
 
-1. Push to `main`. GitHub Actions (`.github/workflows/build.yml`) builds the app and publishes a release `build-<commit>` with `tsd-generator.tar.gz` (app.jar + templates + prompts). This takes about 2 minutes. Watch it in the repo's **Actions** tab.
+1. Push to `main`. GitHub Actions (`.github/workflows/build.yml`) builds the app and publishes a release `build-<commit>` with `tsd-generator.zip` (app.jar + templates + prompts). This takes about 2 minutes. Watch it in the repo's **Actions** tab.
 2. Open Azure Cloud Shell in **Bash** mode and paste:
 
 ```bash
@@ -52,7 +52,7 @@ What the script does (management API calls only, because Cloud Shell can't use z
 - Names the app with the same convention as the other demos: `tsdgen-demo-<suffix>-web`, suffix = `take(uniqueString(resourceGroup().id, prefix, env), 6)`.
 - Creates it on the shared B1 Linux plan `ccai-demo-gqausd-web-plan` (Java 17 SE) if it doesn't exist. Tags: `solution=tsd-generator`, `environment=demo`. The plan itself is never changed.
 - Waits for the GitHub build of the latest commit, then points the app setting `TSD_PACKAGE_URL` at that release.
-- On start, the app downloads and unpacks the package into `/home/site/wwwroot/app` and runs `java -Xmx384m -jar app.jar --server.port=8080`.
+- On start, the container downloads and unpacks the package into `/home/site/wwwroot/app`, then runs `java -Xmx384m -jar app.jar --server.port=8080`. The App Service Java image has **no curl, wget or tar**, so the download is done by Java itself: `Deployment/bootstrap/Boot.java`, passed in the `TSD_BOOTSTRAP` app setting and run as a single-file Java program. It keeps the last copy if a download fails. Edit it with block comments only, because it's flattened to one line.
 - Restarts the app and waits until it answers, then prints the URL.
 
 Settings: `Deployment/environments/demo.env`. Options: `-e <env>`, `--app-name <name>`, `--branch <branch>`.
